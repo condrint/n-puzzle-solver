@@ -259,6 +259,7 @@ class Board:
        depth = 0 
        steps = 0
        edges = [] # helps generate tree
+       nodes = {} # helps generate tree
 
        while queue:
            nextLevelOfQueue = []
@@ -276,9 +277,10 @@ class Board:
 
                steps += 1
                if steps > 46:
+                   self.displayTree(edges, nodes)
                    return
-                
-               self.generateAndSaveImageOfBoard(state, steps, depth)
+
+               nodes[steps] = self.generateString(state)
                 
                if state == self.goalState:
                    print('Solved puzzle with depth of ' + str(depth) + ' in ' + str(steps) + ' steps.')
@@ -312,36 +314,71 @@ class Board:
        return False
     
 
-    def generateAndSaveImageOfBoard(self, state, number, depth, folder="images_for_tree"):
+    def generateString(self, state):
         """
-        generate an image from a board state and save in local folder
-        requires PIL which can be installed by running "pip install PIL"
-        OR "pip install pillow" if the first one does not work
+        returns string representing state
         """
-        from PIL import Image, ImageDraw
-        img = Image.new('RGB', (self.n * 10, self.n * 10), color = (255, 255, 255))
-        drawing = ImageDraw.Draw(img)
+        string = ''
+        for i, val in enumerate(state):
+            if i != 0 and i % self.n == 0:
+                string += '\n'
+            if val == float('inf'):
+                string += '[]'
+            else:
+                string += str(val)
+            if (i + 1) % self.n != 0 and i + 1 < len(state):
+                string += ' '
+        return string
 
-        for i in range(self.n):
-            y = 10 * i #10px * index + offset
-            for j in range(self.n):
-                x = 10 * j + 2 #10px * index + offset
-                index = (i * self.n) + j
-                value = state[index]
-                if value == float('inf'):
-                    value = '__'
-                drawing.text((x, y), str(value), fill=(0, 0, 0))
+
+    def displayTree(self, edges, nodes):
+        """
+        requires matplotlib and networkx which can be install by running 
+        "pip install matplotlib" & "pip install networkx" 
+
+        AND Graphviz MUST be installed onto computer
+        https://www.graphviz.org/download/
+
+        AND the Graphviz/Bin/ folder MUST be added
+        to the system environment variables' PATH
+        """
+        import networkx as nx
+        import matplotlib.pyplot as plt
+        G = nx.DiGraph()
         
-        img.save(folder + '//' + str(number) + '-' + str(depth) + '.jpg')
+        root = nodes[1]
+        # create graph to use to generate image of graph
+        # graph = {
+        #   state_string: [state_strings that are children]
+        # }
+        graph = {}
+        for stepsTaken in nodes.keys():
+            graph[nodes[stepsTaken]] = []
+        
+        for edge in edges:
+            start, end = edge
+            startNode, endNode = nodes[start], nodes[end]
+            graph[startNode].append(endNode)
 
+        for node in graph.keys():
+            G.add_node(node)
+            for child in graph[node]:
+                G.add_edge(node, child)
 
+        # same layout using matplotlib with no labels
+        plt.title('Board states')
+        pos=nx.nx_pydot.graphviz_layout(G, prog='dot')
+        nx.draw(G, pos, with_labels=True, arrows=False, node_size=0)
+        plt.show()
+        time.sleep(10)
+        plt.close()
 
             
   
 if __name__ == "__main__":
     board = Board([8, 1, 3, 4, float('inf'), 2, 7, 6, 5], None, 3)
     board.printBoard()
-    
+
     print('\nBFS:')
     start = time.time()
     board.solveWithBFS()
@@ -363,6 +400,6 @@ if __name__ == "__main__":
     board = Board([2, 8, 3, 1, 6, 4, 7, float('inf'), 5])
 
     # ************** requirements MUST be installed to use the follow methods ****************
-    #            requirements are listed inside of two functions at bottom of class
+    #            requirements are listed inside of functions at bottom of class
     board.BFS_likeSlide()
     

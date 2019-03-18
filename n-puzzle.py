@@ -276,10 +276,9 @@ class Board:
 
                steps += 1
                if steps > 46:
-                   self.displayTree(edges)
                    return
                 
-               self.generateAndSaveImageOfBoard(state, steps)
+               self.generateAndSaveImageOfBoard(state, steps, depth)
                 
                if state == self.goalState:
                    print('Solved puzzle with depth of ' + str(depth) + ' in ' + str(steps) + ' steps.')
@@ -313,7 +312,7 @@ class Board:
        return False
     
 
-    def generateAndSaveImageOfBoard(self, state, number, folder="images_for_tree"):
+    def generateAndSaveImageOfBoard(self, state, number, depth, folder="images_for_tree"):
         """
         generate an image from a board state and save in local folder
         requires PIL which can be installed by running "pip install PIL"
@@ -324,24 +323,21 @@ class Board:
         drawing = ImageDraw.Draw(img)
 
         for i in range(self.n):
-            y = 10 * i 
+            y = 10 * i #10px * index + offset
             for j in range(self.n):
-                x = 10 * j + 2
+                x = 10 * j + 2 #10px * index + offset
                 index = (i * self.n) + j
                 value = state[index]
                 if value == float('inf'):
                     value = '__'
                 drawing.text((x, y), str(value), fill=(0, 0, 0))
         
-        img.save(folder + '//' + str(number) + '.jpg')
+        img.save(folder + '//' + str(number) + '-' + str(depth) + '.jpg')
 
-    def displayTree(self, edges):
-        return
-
-            
 
 
             
+  
 if __name__ == "__main__":
     board = Board([8, 1, 3, 4, float('inf'), 2, 7, 6, 5], None, 3)
     board.printBoard()

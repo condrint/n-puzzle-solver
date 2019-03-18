@@ -229,7 +229,7 @@ class Board:
     
     def manhattanDistance(self, state):
         """
-        returns hamming distance of state
+        returns manhattan distance of state
         and goal state
         
         runs in O(self.n) time, but usually n is very small.

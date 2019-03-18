@@ -346,7 +346,6 @@ class Board:
         import matplotlib.pyplot as plt
         G = nx.DiGraph()
         
-        root = nodes[1]
         # create graph to use to generate image of graph
         # graph = {
         #   state_string: [state_strings that are children]
@@ -376,14 +375,16 @@ class Board:
             
   
 if __name__ == "__main__":
-    board = Board([8, 1, 3, 4, float('inf'), 2, 7, 6, 5], None, 3)
+    #board = Board([5,1,7,3,9,2,11,4,13,6,15,8,float('inf'),10,14,12], None, 4) # predefined board state, 4*4
+    board = Board(None, None, 3) # randomized 3x3
     board.printBoard()
-
+    
     print('\nBFS:')
     start = time.time()
     board.solveWithBFS()
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
+    
 
     print('\nA* search with Hamming distance as heuristic:')
     start = time.time()
@@ -397,9 +398,9 @@ if __name__ == "__main__":
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
 
-    board = Board([2, 8, 3, 1, 6, 4, 7, float('inf'), 5])
+    board = Board([2, 8, 3, 1, 6, 4, 7, float('inf'), 5]) # board state from slide
 
     # ************** requirements MUST be installed to use the follow methods ****************
     #            requirements are listed inside of functions at bottom of class
-    # board.BFS_likeSlide()
+    #board.BFS_likeSlide()
     

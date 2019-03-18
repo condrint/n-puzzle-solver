@@ -401,5 +401,5 @@ if __name__ == "__main__":
 
     # ************** requirements MUST be installed to use the follow methods ****************
     #            requirements are listed inside of functions at bottom of class
-    board.BFS_likeSlide()
+    # board.BFS_likeSlide()
     

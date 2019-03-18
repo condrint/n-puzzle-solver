@@ -67,7 +67,7 @@ class Board:
                     # pops from the front to maintain a consistent order
                     # WAAAY slower than .pop(), runs in O(q) time where
                     # q is the longest length of the queue 
-                    # which I think is factorial(self.n) / 2
+                    # which I think is factorial(self.n ** 2) / 2
                     state = queue.pop(0)
                 else:
                     # .pop() runs in O(1) time
@@ -269,7 +269,7 @@ class Board:
                    # pops from the front to maintain a consistent order
                    # WAAAY slower than .pop(), runs in O(q) time where
                    # q is the longest length of the queue 
-                   # which I think is factorial(self.n) / 2
+                   # which I think is factorial(self.n ** 2) / 2
                    state = queue.pop(0)
                else:
                    # .pop() runs in O(1) time

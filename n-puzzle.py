@@ -13,7 +13,6 @@ class Board:
         initialize an n * n matrix represented by a 1d list
         contains an empty spot and integers 1, 2.... n*n - 1
         """
-        self.limit = 2 ** 200
         self.n = n
         self.goalState = goalState or [i + 1 for i in range(self.n ** 2 - 1)] + [float('inf')] # n=3 will initialize as [1, 2, 3, 4, 5, 6, 7, 8, None]
 
@@ -59,7 +58,9 @@ class Board:
         seenStates.add(tuple(self.state)) # lists are unhashable so the state must be converted to a tuple and checked as a tuple
         depth = 0 
         steps = 0
+
         while queue:
+
             nextLevelOfQueue = []
             while queue:
                 if likeSlide48Graphic:
@@ -244,6 +245,99 @@ class Board:
             horizontalDistance = abs(i % self.n - value % self.n)
             manhattan += verticalDistance + horizontalDistance
         return manhattan
+
+    
+    def BFS_likeSlide(self, likeSlide48Graphic=True):
+       """
+       solves current board state
+       with breadth first search
+       """
+       # initialize queue with current state
+       queue = [self.state]
+       seenStates = set()
+       seenStates.add(tuple(self.state)) # lists are unhashable so the state must be converted to a tuple and checked as a tuple
+       depth = 0 
+       steps = 0
+       edges = [] # helps generate tree
+
+       while queue:
+           nextLevelOfQueue = []
+
+           while queue:
+               if likeSlide48Graphic:
+                   # pops from the front to maintain a consistent order
+                   # WAAAY slower than .pop(), runs in O(q) time where
+                   # q is the longest length of the queue 
+                   # which I think is factorial(self.n) / 2
+                   state = queue.pop(0)
+               else:
+                   # .pop() runs in O(1) time
+                   state = queue.pop()
+
+               steps += 1
+               if steps > 46:
+                   self.displayTree(edges)
+                   return
+                
+               self.generateAndSaveImageOfBoard(state, steps)
+                
+               if state == self.goalState:
+                   print('Solved puzzle with depth of ' + str(depth) + ' in ' + str(steps) + ' steps.')
+                   return True
+
+               # make a deep copy to avoid unexpectedly 
+               # copying a pointer and swapping multiple 
+               # states in the queue
+               indexOfEmptySquare = state.index(float('inf'))
+               iOfE = indexOfEmptySquare
+
+               # swap in the following order: 
+               # left, up, right, down                    LEFT        UP           RIGHT       DOWN            bounds checking
+               for indexToSwapWithEmpty in [i for i in [iOfE - 1, iOfE - self.n, iOfE + 1, iOfE + self.n] if 0 <= i < self.n ** 2 # these next 2 lines prevent cheating 2d array by using 1 dimension
+                                                                                                           and not (iOfE % self.n == 0 and i == iOfE - 1) 
+                                                                                                           and not ((iOfE + 1) % self.n == 0 and i == iOfE + 1)]:
+                   newState = copy.deepcopy(state)
+                   newState[indexOfEmptySquare], newState[indexToSwapWithEmpty] = newState[indexToSwapWithEmpty], newState[indexOfEmptySquare]
+                   if tuple(newState) in seenStates:
+                       continue
+
+                   seenStates.add(tuple(newState))
+                   nextLevelOfQueue.append(newState)
+                   if steps + len(nextLevelOfQueue) + len(queue) <= 46:
+                        edges.append([steps, steps + len(nextLevelOfQueue) + len(queue)]) # tricky math to predict steps needed to get to newly added state 
+
+           queue = nextLevelOfQueue
+           depth += 1
+       # algorithm will get here for boards of odd number of inflections
+       print('Could not solve puzzle.')
+       return False
+    
+
+    def generateAndSaveImageOfBoard(self, state, number, folder="images_for_tree"):
+        """
+        generate an image from a board state and save in local folder
+        requires PIL which can be installed by running "pip install PIL"
+        OR "pip install pillow" if the first one does not work
+        """
+        from PIL import Image, ImageDraw
+        img = Image.new('RGB', (self.n * 10, self.n * 10), color = (255, 255, 255))
+        drawing = ImageDraw.Draw(img)
+
+        for i in range(self.n):
+            y = 10 * i 
+            for j in range(self.n):
+                x = 10 * j + 2
+                index = (i * self.n) + j
+                value = state[index]
+                if value == float('inf'):
+                    value = '__'
+                drawing.text((x, y), str(value), fill=(0, 0, 0))
+        
+        img.save(folder + '//' + str(number) + '.jpg')
+
+    def displayTree(self, edges):
+        return
+
             
 
 
@@ -269,3 +363,10 @@ if __name__ == "__main__":
     board.solveWithManhattan()
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
+
+    board = Board([2, 8, 3, 1, 6, 4, 7, float('inf'), 5])
+
+    # ************** requirements MUST be installed to use the follow methods ****************
+    #            requirements are listed inside of two functions at bottom of class
+    board.BFS_likeSlide()
+    

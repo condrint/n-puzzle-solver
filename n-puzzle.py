@@ -16,7 +16,7 @@ class Board:
         self.n = n
         self.goalState = goalState or [i + 1 for i in range(self.n ** 2 - 1)] + [float('inf')] # n=3 will initialize as [1, 2, 3, 4, 5, 6, 7, 8, None]
 
-        if startingBoard and isinstance(startingBoard, list) and len(startingBoard) == 9:
+        if startingBoard and isinstance(startingBoard, list) and len(startingBoard) == n*n:
             self.state = startingBoard
         else:
             self.state = copy.deepcopy(self.goalState)
@@ -54,6 +54,7 @@ class Board:
 
         # initialize queue with current state
         queue = [self.state]
+        pathQueue = [[self.state]]
         seenStates = set()
         seenStates.add(tuple(self.state)) # lists are unhashable so the state must be converted to a tuple and checked as a tuple
         depth = 0 
@@ -62,6 +63,8 @@ class Board:
         while queue:
 
             nextLevelOfQueue = []
+            nextLevelOfPathQueue = []
+            
             while queue:
                 if likeSlide48Graphic:
                     # pops from the front to maintain a consistent order
@@ -69,14 +72,16 @@ class Board:
                     # q is the longest length of the queue 
                     # which I think is factorial(self.n ** 2) / 2
                     state = queue.pop(0)
+                    path = pathQueue.pop(0)
                 else:
                     # .pop() runs in O(1) time
                     state = queue.pop()
+                    path = pathQueue.pop()
                 steps += 1
 
                 if state == self.goalState:
                     print('Solved puzzle with depth of ' + str(depth) + ' in ' + str(steps) + ' steps.')
-                    return True
+                    return path
 
                 # make a deep copy to avoid unexpectedly 
                 # copying a pointer and swapping multiple 
@@ -94,10 +99,14 @@ class Board:
                     if tuple(newState) in seenStates:
                         continue
                     
+                    newPath = copy.deepcopy(path)
+                    newPath.append(newState)
                     seenStates.add(tuple(newState))
                     nextLevelOfQueue.append(newState)
+                    nextLevelOfPathQueue.append(newPath)
 
             queue = nextLevelOfQueue
+            pathQueue = nextLevelOfPathQueue 
             depth += 1
 
         # algorithm will get here for boards of odd number of inflections
@@ -372,29 +381,30 @@ class Board:
         time.sleep(10)
         plt.close()
 
-            
+def printPath(path):
+    print(path)
   
 if __name__ == "__main__":
-    #board = Board([5,1,7,3,9,2,11,4,13,6,15,8,float('inf'),10,14,12], None, 4) # predefined board state, 4*4
-    board = Board(None, None, 3) # randomized 3x3
+    board = Board() # predefined board state, 4*4
+    #board = Board(None, None, 3) # randomized 3x3
     board.printBoard()
     
     print('\nBFS:')
     start = time.time()
-    board.solveWithBFS()
+    printPath(board.solveWithBFS())
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
     
 
     print('\nA* search with Hamming distance as heuristic:')
     start = time.time()
-    board.solveWithHamming()
+    printPath(board.solveWithHamming())
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
     
     print('\nA* search with Manhattan distance as heuristic:')
     start = time.time()
-    board.solveWithManhattan()
+    printPath(board.solveWithManhattan())
     end = time.time()
     print('Ran in ' + str(end - start) + ' seconds.')
 

@@ -129,7 +129,7 @@ class Board:
         # initialize queue with current state
         queue = []
         distance = self.hammingDistance(self.state)
-        heappush(queue, (distance + 0, distance, self.state)) #heap(hammingdistance + steps, hammingdistance to subtract from total, state)
+        heappush(queue, (distance + 0, distance, self.state, [self.state])) #heap(hammingdistance + steps, hammingdistance to subtract from total, state)
 
         seenStates = set()
         seenStates.add(tuple(self.state)) # lists are unhashable so the state must be converted to a tuple and checked as a tuple
@@ -137,11 +137,11 @@ class Board:
 
         while queue:
             currentNode = heappop(queue)
-            state, currentStateSteps = currentNode[2], currentNode[0] - currentNode[1]
+            state, currentStateSteps, currentPath = currentNode[2], currentNode[0] - currentNode[1], currentNode[3]
             steps += 1
             if state == self.goalState:
                 print('Solved puzzle in ' + str(steps) + ' steps.')
-                return True
+                return currentPath
 
             # make a deep copy to avoid unexpectedly 
             # copying a pointer and swapping multiple 
@@ -158,10 +158,11 @@ class Board:
                 newState[indexOfEmptySquare], newState[indexToSwapWithEmpty] = newState[indexToSwapWithEmpty], newState[indexOfEmptySquare]
                 if tuple(newState) in seenStates:
                     continue
-                
+                newPath = copy.deepcopy(currentPath)
+                newPath.append(newState)
                 seenStates.add(tuple(newState))
                 distance = self.hammingDistance(newState)
-                heappush(queue, (currentStateSteps + 1 + distance, distance, newState))
+                heappush(queue, (currentStateSteps + 1 + distance, distance, newState, newPath))
 
         # algorithm will get here for boards of odd number of inflections
         print('Could not solve puzzle.')
@@ -382,7 +383,23 @@ class Board:
         plt.close()
 
 def printPath(path):
-    print(path)
+    print('Path taken:\n')
+    count = 1
+    for state in path:
+        print(str(count) + '.\n')
+        count += 1
+        string = ''
+        for i, val in enumerate(state):
+            if i != 0 and i % 3 == 0:
+                string += '\n'
+            if val == float('inf'):
+                string += '[]'
+            else:
+                string += str(val)
+            if (i + 1) % 3 != 0 and i + 1 < len(state):
+                string += ' '
+        print(string)
+        print('\n\n')
   
 if __name__ == "__main__":
     board = Board() # predefined board state, 4*4

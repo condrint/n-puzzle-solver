@@ -196,7 +196,7 @@ class Board:
         # initialize queue with current state
         queue = []
         distance = self.manhattanDistance(self.state)
-        heappush(queue, (distance + 0, distance, self.state)) #heap(manhattandistance + steps, mannhattandistance to subtract from total, state)
+        heappush(queue, (distance + 0, distance, self.state, [self.state])) #heap(manhattandistance + steps, mannhattandistance to subtract from total, state)
 
         seenStates = set()
         seenStates.add(tuple(self.state)) # lists are unhashable so the state must be converted to a tuple and checked as a tuple
@@ -204,12 +204,11 @@ class Board:
 
         while queue:
             currentNode = heappop(queue)
-            #print(currentNode)
-            state, currentStateSteps = currentNode[2], currentNode[0] - currentNode[1]
+            state, currentStateSteps, currentPath = currentNode[2], currentNode[0] - currentNode[1], currentNode[3]
             steps += 1
             if state == self.goalState:
                 print('Solved puzzle with in ' + str(steps) + ' steps.')
-                return True
+                return currentPath
 
             # make a deep copy to avoid unexpectedly 
             # copying a pointer and swapping multiple 
@@ -226,10 +225,11 @@ class Board:
                 newState[indexOfEmptySquare], newState[indexToSwapWithEmpty] = newState[indexToSwapWithEmpty], newState[indexOfEmptySquare]
                 if tuple(newState) in seenStates:
                     continue
-                
+                newPath = copy.deepcopy(currentPath)
+                newPath.append(newState)
                 seenStates.add(tuple(newState))
                 distance = self.manhattanDistance(newState)
-                heappush(queue, (currentStateSteps + 1 + distance, distance, newState))
+                heappush(queue, (currentStateSteps + 1 + distance, distance, newState, newPath))
 
 
         # algorithm will get here for boards of odd number of inflections
